@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from html import unescape
 from datetime import datetime
 
-URL = "https://www.kalbi.pl/"
+URL = "https://www.kalbi.pl/17-maja"
 
 
 def clean(text):
