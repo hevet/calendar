@@ -1,0 +1,42 @@
+name: Generate Calendar
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install libs
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Generate JSON
+        run: |
+          python generate.py
+
+      - name: Commit files
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add calendar.json
+
+          git commit -m "Update calendar" || echo "No changes"
+
+          git push
