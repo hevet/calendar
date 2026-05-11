@@ -2,7 +2,7 @@ name: Generate Calendar
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '15 23 * * *'
 
   workflow_dispatch:
 
