@@ -86,11 +86,19 @@ namedays = []
 
 section = soup.find("section", class_="calCard-name-day")
 
-if section:
-    for a in section.find_all("a"):
-        namedays.append(clean(a.text))
+result["namedays"] = ""
 
-result["namedays"] = ", ".join(namedays)
+if section:
+
+    text = clean(section.get_text(" "))
+
+    if "oraz" in text:
+        text = text.split("oraz")[0]
+
+    if "obchodzą:" in text:
+        text = text.split("obchodzą:")[1]
+
+    result["namedays"] = text.strip()
 
 
 # =====================================================
