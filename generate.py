@@ -96,7 +96,12 @@ if section:
     if "obchodzą:" in text:
         text = text.split("obchodzą:")[1]
 
-    result["namedays"] = text.strip()
+    text = text.strip()
+
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'\s+,', ',', text)
+    
+    result["namedays"] = text
 
 
 # =====================================================
@@ -151,7 +156,7 @@ if section:
     for li in section.find_all("li"):
         proverbs.append(clean(li.text))
 
-result["proverbs"] = " ".join(proverbs)
+result["proverbs"] = ", ".join(proverbs)
 
 
 # =====================================================
