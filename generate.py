@@ -88,20 +88,15 @@ result["namedays"] = ""
 
 if section:
 
-    html_section = str(section)
+    text = clean(section.get_text(" "))
 
-    parts = re.split(r'oraz', html_section, flags=re.IGNORECASE)
+    if "oraz" in text:
+        text = text.split("oraz")[0]
 
-    first_part = parts[0]
+    if "obchodzą:" in text:
+        text = text.split("obchodzą:")[1]
 
-    soup_part = BeautifulSoup(first_part, "html.parser")
-
-    names = []
-
-    for a in soup_part.find_all("a"):
-        names.append(clean(a.text))
-
-    result["namedays"] = ", ".join(names)
+    result["namedays"] = text.strip()
 
 
 # =====================================================
