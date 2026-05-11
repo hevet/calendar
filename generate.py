@@ -82,23 +82,26 @@ if date_input:
 # IMIENINY
 # =====================================================
 
-namedays = []
-
 section = soup.find("section", class_="calCard-name-day")
 
 result["namedays"] = ""
 
 if section:
 
-    text = clean(section.get_text(" "))
+    html_section = str(section)
 
-    if "oraz" in text:
-        text = text.split("oraz")[0]
+    parts = re.split(r'oraz', html_section, flags=re.IGNORECASE)
 
-    if "obchodzą:" in text:
-        text = text.split("obchodzą:")[1]
+    first_part = parts[0]
 
-    result["namedays"] = text.strip()
+    soup_part = BeautifulSoup(first_part, "html.parser")
+
+    names = []
+
+    for a in soup_part.find_all("a"):
+        names.append(clean(a.text))
+
+    result["namedays"] = ", ".join(names)
 
 
 # =====================================================
