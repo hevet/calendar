@@ -6,11 +6,21 @@ from html import unescape
 from datetime import datetime
 
 URL = "https://www.kalbi.pl/"
+CITY = "bydgoszcz"
+
+SUN_URL = (
+    f"https://www.kalbi.pl/"
+    f"wschod-zachod-slonca/{CITY}"
+)
 
 
 def clean(text):
     return unescape(text.strip())
 
+
+# =====================================================
+# GŁÓWNA STRONA
+# =====================================================
 
 html = requests.get(
     URL,
@@ -27,7 +37,10 @@ result = {
     "zodiac": "",
     "officialHolidays": "",
     "holidays": "",
-    "proverbs": ""
+    "proverbs": "",
+    "sunrise": "",
+    "sunset": "",
+    "dayLength": ""
 }
 
 
@@ -37,7 +50,10 @@ result = {
 
 weekday = ""
 
-dayweek = soup.find("div", class_="calCard-day-week")
+dayweek = soup.find(
+    "div",
+    class_="calCard-day-week"
+)
 
 if dayweek:
     weekday = clean(dayweek.text)
@@ -47,13 +63,21 @@ if dayweek:
 # DATA
 # =====================================================
 
-date_input = soup.find("input", {"name": "data"})
+date_input = soup.find(
+    "input",
+    {"name": "data"}
+)
 
 if date_input:
+
     date = date_input.get("value", "")
 
     if date:
-        dt = datetime.strptime(date, "%Y-%m-%d")
+
+        dt = datetime.strptime(
+            date,
+            "%Y-%m-%d"
+        )
 
         months = {
             1: "stycznia",
@@ -82,13 +106,18 @@ if date_input:
 # IMIENINY
 # =====================================================
 
-section = soup.find("section", class_="calCard-name-day")
+section = soup.find(
+    "section",
+    class_="calCard-name-day"
+)
 
 result["namedays"] = ""
 
 if section:
 
-    text = clean(section.get_text(" "))
+    text = clean(
+        section.get_text(" ")
+    )
 
     if "oraz" in text:
         text = text.split("oraz")[0]
@@ -98,9 +127,9 @@ if section:
 
     text = text.strip()
 
-    text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'\s+,', ',', text)
-    
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+,", ",", text)
+
     result["namedays"] = text
 
 
@@ -111,22 +140,29 @@ if section:
 html_text = str(soup)
 
 m = re.search(
-    r'Słoneczny znak zodiaku:\s*(.*?)"',
+    r"Słoneczny znak zodiaku:\s*(.*?)\"",
     html_text
 )
 
 if m:
-    result["zodiac"] = clean(m.group(1))
+    result["zodiac"] = clean(
+        m.group(1)
+    )
 
 
 # =====================================================
 # ŚWIĘTA OFICJALNE
 # =====================================================
 
-fete = soup.find("div", class_="calCard-fete")
+fete = soup.find(
+    "div",
+    class_="calCard-fete"
+)
 
 if fete:
-    result["officialHolidays"] = clean(fete.text)
+    result["officialHolidays"] = clean(
+        fete.text
+    )
 
 
 # =====================================================
@@ -135,11 +171,18 @@ if fete:
 
 holidays = []
 
-section = soup.find("section", class_="calCard-ententa")
+section = soup.find(
+    "section",
+    class_="calCard-ententa"
+)
 
 if section:
+
     for a in section.find_all("a"):
-        holidays.append(clean(a.text))
+
+        holidays.append(
+            clean(a.text)
+        )
 
 result["holidays"] = ". ".join(holidays)
 
@@ -150,18 +193,86 @@ result["holidays"] = ". ".join(holidays)
 
 proverbs = []
 
-section = soup.find("section", class_="calCard_proverb")
+section = soup.find(
+    "section",
+    class_="calCard_proverb"
+)
 
 if section:
+
     for li in section.find_all("li"):
-        proverbs.append(clean(li.text))
+
+        proverbs.append(
+            clean(li.text)
+        )
 
 result["proverbs"] = ", ".join(proverbs)
 
 
 # =====================================================
+# WSCHÓD / ZACHÓD SŁOŃCA
+# =====================================================
 
-with open("calendar.json", "w", encoding="utf-8") as f:
+sun_html = requests.get(
+    SUN_URL,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+).text
+
+sun_soup = BeautifulSoup(
+    sun_html,
+    "html.parser"
+)
+
+sun_text = sun_soup.get_text("\n")
+
+
+# Wschód słońca
+
+m = re.search(
+    r"Wschód słońca\s+(\d{2}:\d{2})",
+    sun_text
+)
+
+if m:
+    result["sunrise"] = m.group(1)
+
+
+# Zachód słońca
+
+m = re.search(
+    r"Zachód słońca\s+(\d{2}:\d{2})",
+    sun_text
+)
+
+if m:
+    result["sunset"] = m.group(1)
+
+
+# Długość dnia
+
+m = re.search(
+    r"Długość dnia[:\s]+([0-9h i min]+)",
+    sun_text
+)
+
+if m:
+    result["dayLength"] = (
+        m.group(1).strip()
+    )
+
+
+# =====================================================
+# ZAPIS JSON
+# =====================================================
+
+with open(
+    "calendar.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
     json.dump(
         result,
         f,
