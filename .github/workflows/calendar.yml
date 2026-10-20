@@ -27,17 +27,22 @@ jobs:
         run: |
           pip install requests beautifulsoup4
 
-      - name: Generate JSON
-        run: |
-          python generate.py
+      - name: Generate JSON with Retry
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 15
+          command: python generate.py
 
-      - name: Commit files
+      - name: Commit and Push files
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
           git add calendar.json
-
           git commit -m "Update calendar" || echo "No changes"
 
+          # Zabezpieczenie przed konfliktem przy jednoczesnych uruchomieniach
+          git pull --rebase origin main || echo "No rebase needed"
           git push
