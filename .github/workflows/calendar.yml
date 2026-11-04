@@ -40,4 +40,6 @@ jobs:
 
           git commit -m "Update calendar" || echo "No changes"
 
+          git pull --rebase origin main
+
           git push
