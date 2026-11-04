@@ -40,7 +40,8 @@ result = {
     "proverbs": "",
     "sunrise": "",
     "sunset": "",
-    "dayLength": ""
+    "dayLength": "",
+    "dayYear": ""
 }
 
 
@@ -58,6 +59,22 @@ dayweek = soup.find(
 if dayweek:
     weekday = clean(dayweek.text)
 
+
+# =====================================================
+# DZIEŃ ROKU
+# =====================================================
+
+dayyear = soup.find(
+    "div",
+    class_="calCard-dayyear"
+)
+
+if dayyear:
+    m = re.search(r"\d+", dayyear.get_text())
+
+    if m:
+        result["dayYear"] = int(m.group())
+    
 
 # =====================================================
 # DATA
