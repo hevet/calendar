@@ -2,7 +2,7 @@ name: Generate Calendar
 
 on:
   schedule:
-    - cron: '5 23 * * *'
+    - cron: '5 * * * *'
 
   workflow_dispatch:
 
@@ -18,32 +18,47 @@ jobs:
       contents: write
 
     steps:
+      - name: Check Polish time
+        id: timecheck
+        run: |
+          HOUR=$(TZ=Europe/Warsaw date +%H)
+
+          if [ "$HOUR" = "00" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
       - name: Setup Python
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: Install libs
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           pip install requests beautifulsoup4
 
       - name: Generate JSON
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           python generate.py
 
       - name: Commit files
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
           git add calendar.json
-
           git commit -m "Update calendar" || echo "No changes"
 
           git fetch origin main
