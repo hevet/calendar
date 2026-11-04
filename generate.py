@@ -70,10 +70,7 @@ dayyear = soup.find(
 )
 
 if dayyear:
-    m = re.search(r"\d+", dayyear.get_text())
-
-    if m:
-        result["dayYear"] = int(m.group())
+    result["dayYear"] = clean(dayyear.get_text())
     
 
 # =====================================================
