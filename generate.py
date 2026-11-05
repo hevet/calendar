@@ -41,6 +41,8 @@ result = {
     "quote": "",
     "sunrise": "",
     "sunset": "",
+    "moonrise": "",
+    "moonset": "",
     "dayLength": "",
     "dayYear": ""
 }
@@ -301,6 +303,31 @@ if m:
     result["dayLength"] = (
         m.group(1).strip()
     )
+
+
+# =====================================================
+# WSCHÓD / ZACHÓD KSIĘŻYCA
+# =====================================================
+
+moon_section = soup.find(
+    "section",
+    class_="calCard-astro-moon"
+)
+
+if moon_section:
+    # Szukamy wszystkich divów wewnątrz sekcji księżyca
+    for div in moon_section.find_all("div"):
+        text = clean(div.get_text())
+        
+        if "Wsch." in text:
+            m = re.search(r"(\d{2}:\d{2})", text)
+            if m:
+                result["moonrise"] = m.group(1)
+                
+        elif "Zach." in text:
+            m = re.search(r"(\d{2}:\d{2})", text)
+            if m:
+                result["moonset"] = m.group(1)
 
 
 # =====================================================
