@@ -39,7 +39,6 @@ result = {
     "holidays": "",
     "proverbs": "",
     "quote": "",
-    "quoteAuthor": "",
     "sunrise": "",
     "sunset": "",
     "dayLength": "",
@@ -230,26 +229,16 @@ result["proverbs"] = ", ".join(proverbs)
 # =====================================================
 
 result["quote"] = ""
-result["quoteAuthor"] = ""
 
 quote_section = soup.select_one(
     "section.calCard-quotes .calcard_proverb-content"
 )
 
 if quote_section:
-    quote_tag = quote_section.find("i")
-
-    if quote_tag:
-        result["quote"] = clean(
-            quote_tag.get_text(" ", strip=True)
-        ).strip("„”\"' -\u00a0")
-
-        author_text = quote_tag.next_sibling
-
-        if author_text:
-            result["quoteAuthor"] = clean(
-                str(author_text)
-            ).strip(" -\u00a0")
+    quote_text = quote_section.get_text(" ", strip=True)
+    quote_text = clean(quote_text)
+    quote_text = re.sub(r"\s+", " ", quote_text)
+    result["quote"] = quote_text.strip()
 
 
 # =====================================================
