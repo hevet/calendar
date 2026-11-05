@@ -8,9 +8,21 @@ from datetime import datetime
 URL = "https://www.kalbi.pl/"
 CITY = "bydgoszcz"
 
-SUN_URL = (
-    f"https://www.kalbi.pl/"
-    f"wschod-zachod-slonca/{CITY}"
+# Tworzymy sesję, aby zachować ciasteczka i stan sesji
+session = requests.Session()
+
+# =====================================================
+# USTAWIANIE LOKALIZACJI (DLA MIASTA)
+# =====================================================
+session.post(
+    "https://www.kalbi.pl/kartka/ustawienia-lokalizacji",
+    data={
+        "location_slug": CITY
+    },
+    headers={
+        "User-Agent": "Mozilla/5.0",
+        "Referer": URL
+    }
 )
 
 
@@ -19,10 +31,10 @@ def clean(text):
 
 
 # =====================================================
-# GŁÓWNA STRONA
+# GŁÓWNA STRONA (POBRANA DLA WYBRANEGO MIASTA)
 # =====================================================
 
-html = requests.get(
+html = session.get(
     URL,
     headers={
         "User-Agent": "Mozilla/5.0"
@@ -41,6 +53,8 @@ result = {
     "quote": "",
     "sunrise": "",
     "sunset": "",
+    "moonrise": "",
+    "moonset": "",
     "dayLength": "",
     "dayYear": ""
 }
@@ -230,14 +244,12 @@ result["proverbs"] = ", ".join(proverbs)
 
 result["quote"] = ""
 
-# Szukamy najpierw całej sekcji cytatów
 quote_section = soup.find(
     "section",
     class_="calCard-quotes"
 )
 
 if quote_section:
-    # Wewnątrz tej sekcji szukamy właściwej treści cytatu
     content_div = quote_section.find(
         "div",
         class_="calCard_proverb-content"
@@ -250,10 +262,12 @@ if quote_section:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD SŁOŃCA
+# WSCHÓD / ZACHÓD SŁOŃCA (Z PODSTRONY MIASTA)
 # =====================================================
 
-sun_html = requests.get(
+SUN_URL = f"https://www.kalbi.pl/wschod-zachod-slonca/{CITY}"
+
+sun_html = session.get(
     SUN_URL,
     headers={
         "User-Agent": "Mozilla/5.0"
@@ -267,9 +281,7 @@ sun_soup = BeautifulSoup(
 
 sun_text = sun_soup.get_text("\n")
 
-
 # Wschód słońca
-
 m = re.search(
     r"Wschód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -278,9 +290,7 @@ m = re.search(
 if m:
     result["sunrise"] = m.group(1)
 
-
 # Zachód słońca
-
 m = re.search(
     r"Zachód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -289,9 +299,7 @@ m = re.search(
 if m:
     result["sunset"] = m.group(1)
 
-
 # Długość dnia
-
 m = re.search(
     r"Długość dnia[:\s]+([0-9h i min]+)",
     sun_text
@@ -301,6 +309,40 @@ if m:
     result["dayLength"] = (
         m.group(1).strip()
     )
+
+
+# =====================================================
+# WSCHÓD / ZACHÓD KSIĘŻYCA (ZE STRONY GŁÓWNEJ DLA MIASTA)
+# =====================================================
+
+moon_section = soup.find(
+    "section",
+    class_="calCard-astro-moon"
+)
+
+if moon_section:
+    moon_text = moon_section.get_text(" ", strip=True)
+    moon_text = re.sub(r"\s+", " ", moon_text)
+
+    # Wschód księżyca
+    m = re.search(
+        r"Wsch\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
+    )
+
+    if m:
+        result["moonrise"] = m.group(1).zfill(5)
+
+    # Zachód księżyca
+    m = re.search(
+        r"Zach\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
+    )
+
+    if m:
+        result["moonset"] = m.group(1).zfill(5)
 
 
 # =====================================================
