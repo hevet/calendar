@@ -39,6 +39,7 @@ result = {
     "holidays": "",
     "proverbs": "",
     "quote": "",
+    "quoteAuthor": "",
     "sunrise": "",
     "sunset": "",
     "dayLength": "",
