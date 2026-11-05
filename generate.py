@@ -41,8 +41,6 @@ result = {
     "quote": "",
     "sunrise": "",
     "sunset": "",
-    "moonrise": "",
-    "moonset": "",
     "dayLength": "",
     "dayYear": ""
 }
@@ -252,7 +250,7 @@ if quote_section:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD SŁOŃCA I KSIĘŻYCA (DLA MIASTA)
+# WSCHÓD / ZACHÓD SŁOŃCA
 # =====================================================
 
 sun_html = requests.get(
@@ -271,6 +269,7 @@ sun_text = sun_soup.get_text("\n")
 
 
 # Wschód słońca
+
 m = re.search(
     r"Wschód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -281,6 +280,7 @@ if m:
 
 
 # Zachód słońca
+
 m = re.search(
     r"Zachód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -291,6 +291,7 @@ if m:
 
 
 # Długość dnia
+
 m = re.search(
     r"Długość dnia[:\s]+([0-9h i min]+)",
     sun_text
@@ -300,41 +301,6 @@ if m:
     result["dayLength"] = (
         m.group(1).strip()
     )
-
-
-# =====================================================
-# WSCHÓD / ZACHÓD KSIĘŻYCA (Z PODSTRONY MIASTA)
-# =====================================================
-
-# Szukamy sekcji księżyca w sparsowanymhtml z podstrony miasta (sun_soup), a nie głównej strony
-moon_section = sun_soup.find(
-    "section",
-    class_="calCard-astro-moon"
-)
-
-if moon_section:
-    moon_text = moon_section.get_text(" ", strip=True)
-    moon_text = re.sub(r"\s+", " ", moon_text)
-
-    # Wschód księżyca
-    m = re.search(
-        r"Wsch\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
-        moon_text,
-        re.IGNORECASE
-    )
-
-    if m:
-        result["moonrise"] = m.group(1).zfill(5)
-
-    # Zachód księżyca
-    m = re.search(
-        r"Zach\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
-        moon_text,
-        re.IGNORECASE
-    )
-
-    if m:
-        result["moonset"] = m.group(1).zfill(5)
 
 
 # =====================================================
