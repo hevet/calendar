@@ -230,7 +230,7 @@ result["proverbs"] = ", ".join(proverbs)
 
 quote_section = soup.find(
     "div",
-    class_="calcard_proverb-content"
+    class_="calCard_proverb-content"
 )
 
 result["quote"] = ""
