@@ -252,7 +252,7 @@ if quote_section:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD SŁOŃCA
+# WSCHÓD / ZACHÓD SŁOŃCA I KSIĘŻYCA (DLA MIASTA)
 # =====================================================
 
 sun_html = requests.get(
@@ -271,7 +271,6 @@ sun_text = sun_soup.get_text("\n")
 
 
 # Wschód słońca
-
 m = re.search(
     r"Wschód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -282,7 +281,6 @@ if m:
 
 
 # Zachód słońca
-
 m = re.search(
     r"Zachód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -293,7 +291,6 @@ if m:
 
 
 # Długość dnia
-
 m = re.search(
     r"Długość dnia[:\s]+([0-9h i min]+)",
     sun_text
@@ -306,10 +303,11 @@ if m:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD KSIĘŻYCA
+# WSCHÓD / ZACHÓD KSIĘŻYCA (Z PODSTRONY MIASTA)
 # =====================================================
 
-moon_section = soup.find(
+# Szukamy sekcji księżyca w sparsowanymhtml z podstrony miasta (sun_soup), a nie głównej strony
+moon_section = sun_soup.find(
     "section",
     class_="calCard-astro-moon"
 )
