@@ -7,11 +7,10 @@ from datetime import datetime
 
 URL = "https://www.kalbi.pl/"
 CITY = "bydgoszcz"
+SUN_URL = f"https://www.kalbi.pl/wschod-zachod-slonca/{CITY}"
 
-SUN_URL = (
-    f"https://www.kalbi.pl/"
-    f"wschod-zachod-slonca/{CITY}"
-)
+# Tworzymy sesję
+session = requests.Session()
 
 
 def clean(text):
@@ -19,10 +18,46 @@ def clean(text):
 
 
 # =====================================================
-# GŁÓWNA STRONA
+# 1. POBIERANIE STRONY GŁÓWNEJ I TOKENA CSRF
 # =====================================================
+initial_html = session.get(
+    URL,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+).text
 
-html = requests.get(
+initial_soup = BeautifulSoup(initial_html, "html.parser")
+
+# Szukamy csrf_token widocznego w formularzu lokalizacji
+csrf_input = initial_soup.find(
+    "input",
+    {"name": "csrf_token"}
+)
+csrf_token = csrf_input.get("value") if csrf_input else ""
+
+
+# =====================================================
+# 2. USTAWIANIE LOKALIZACI Z TOKENEM CSRF
+# =====================================================
+if csrf_token:
+    session.post(
+        "https://www.kalbi.pl/kartka/ustawienia-lokalizacji",
+        data={
+            "csrf_token": csrf_token,
+            "location_slug": CITY
+        },
+        headers={
+            "User-Agent": "Mozilla/5.0",
+            "Referer": URL
+        }
+    )
+
+
+# =====================================================
+# 3. POBIERANIE WŁAŚCIWEJ STRONY GŁÓWNEJ (DLA BYDGOSZCZY)
+# =====================================================
+html = session.get(
     URL,
     headers={
         "User-Agent": "Mozilla/5.0"
@@ -232,14 +267,12 @@ result["proverbs"] = ", ".join(proverbs)
 
 result["quote"] = ""
 
-# Szukamy najpierw całej sekcji cytatów
 quote_section = soup.find(
     "section",
     class_="calCard-quotes"
 )
 
 if quote_section:
-    # Wewnątrz tej sekcji szukamy właściwej treści cytatu
     content_div = quote_section.find(
         "div",
         class_="calCard_proverb-content"
@@ -252,10 +285,10 @@ if quote_section:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD SŁOŃCA
+# WSCHÓD / ZACHÓD SŁOŃCA (Z PODSTRONY MIASTA)
 # =====================================================
 
-sun_html = requests.get(
+sun_html = session.get(
     SUN_URL,
     headers={
         "User-Agent": "Mozilla/5.0"
@@ -269,9 +302,7 @@ sun_soup = BeautifulSoup(
 
 sun_text = sun_soup.get_text("\n")
 
-
 # Wschód słońca
-
 m = re.search(
     r"Wschód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -280,9 +311,7 @@ m = re.search(
 if m:
     result["sunrise"] = m.group(1)
 
-
 # Zachód słońca
-
 m = re.search(
     r"Zachód słońca\s+(\d{2}:\d{2})",
     sun_text
@@ -291,9 +320,7 @@ m = re.search(
 if m:
     result["sunset"] = m.group(1)
 
-
 # Długość dnia
-
 m = re.search(
     r"Długość dnia[:\s]+([0-9h i min]+)",
     sun_text
@@ -306,7 +333,7 @@ if m:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD KSIĘŻYCA
+# WSCHÓD / ZACHÓD KSIĘŻYCA (ZE STRONY GŁÓWNEJ DLA MIASTA)
 # =====================================================
 
 moon_section = soup.find(
@@ -315,19 +342,26 @@ moon_section = soup.find(
 )
 
 if moon_section:
-    # Szukamy wszystkich divów wewnątrz sekcji księżyca
-    for div in moon_section.find_all("div"):
-        text = clean(div.get_text())
-        
-        if "Wsch." in text:
-            m = re.search(r"(\d{2}:\d{2})", text)
-            if m:
-                result["moonrise"] = m.group(1)
-                
-        elif "Zach." in text:
-            m = re.search(r"(\d{2}:\d{2})", text)
-            if m:
-                result["moonset"] = m.group(1)
+    moon_text = moon_section.get_text(" ", strip=True)
+    moon_text = re.sub(r"\s+", " ", moon_text)
+
+    # Wschód księżyca (szukamy dokładnie frazy Wsch. Księżyca)
+    m = re.search(
+        r"Wsch\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
+    )
+    if m:
+        result["moonrise"] = m.group(1).zfill(5)
+
+    # Zachód księżyca (szukamy dokładnie frazy Zach. Księżyca)
+    m = re.search(
+        r"Zach\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
+    )
+    if m:
+        result["moonset"] = m.group(1).zfill(5)
 
 
 # =====================================================
