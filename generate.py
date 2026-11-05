@@ -7,6 +7,7 @@ from datetime import datetime
 
 URL = "https://www.kalbi.pl/"
 CITY = "bydgoszcz"
+SUN_URL = f"https://www.kalbi.pl/wschod-zachod-slonca/{CITY}"
 
 # Tworzymy sesję, aby zachować ciasteczka i stan sesji
 session = requests.Session()
@@ -31,7 +32,7 @@ def clean(text):
 
 
 # =====================================================
-# GŁÓWNA STRONA (POBRANA DLA WYBRANEGO MIASTA)
+# GŁÓWNA STRONA
 # =====================================================
 
 html = session.get(
@@ -262,10 +263,8 @@ if quote_section:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD SŁOŃCA (Z PODSTRONY MIASTA)
+# DANE ASTRONOMICZNE (SŁOŃCE I KSIĘŻYC DLA MIASTA)
 # =====================================================
-
-SUN_URL = f"https://www.kalbi.pl/wschod-zachod-slonca/{CITY}"
 
 sun_html = session.get(
     SUN_URL,
@@ -286,7 +285,6 @@ m = re.search(
     r"Wschód słońca\s+(\d{2}:\d{2})",
     sun_text
 )
-
 if m:
     result["sunrise"] = m.group(1)
 
@@ -295,7 +293,6 @@ m = re.search(
     r"Zachód słońca\s+(\d{2}:\d{2})",
     sun_text
 )
-
 if m:
     result["sunset"] = m.group(1)
 
@@ -304,53 +301,37 @@ m = re.search(
     r"Długość dnia[:\s]+([0-9h i min]+)",
     sun_text
 )
-
 if m:
-    result["dayLength"] = (
-        m.group(1).strip()
+    result["dayLength"] = m.group(1).strip()
+
+
+# Wschód / Zachód księżyca (pobierane z tej samej podstrony miasta co słońce)
+moon_section = sun_soup.find(
+    "section",
+    class_="calCard-astro-moon"
+)
+
+if moon_section:
+    moon_text = moon_section.get_text(" ", strip=True)
+    moon_text = re.sub(r"\s+", " ", moon_text)
+
+    # Wschód księżyca
+    m = re.search(
+        r"Wsch\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
     )
+    if m:
+        result["moonrise"] = m.group(1).zfill(5)
 
-
-# =====================================================
-# WSCHÓD / ZACHÓD KSIĘŻYCA (Z DEDYKOWANEJ PODSTRONY MIASTA)
-# =====================================================
-
-MOON_URL = f"https://www.kalbi.pl/kalendarz-faz-ksiezyca/{CITY}"
-
-moon_html = session.get(
-    MOON_URL,
-    headers={
-        "User-Agent": "Mozilla/5.0"
-    }
-).text
-
-moon_soup = BeautifulSoup(
-    moon_html,
-    "html.parser"
-)
-
-moon_text = moon_soup.get_text(" ", strip=True)
-moon_text = re.sub(r"\s+", " ", moon_text)
-
-# Wschód księżyca
-m = re.search(
-    r"Wschód:\s*(\d{2}:\d{2})",
-    moon_text,
-    re.IGNORECASE
-)
-
-if m:
-    result["moonrise"] = m.group(1).zfill(5)
-
-# Zachód księżyca
-m = re.search(
-    r"Zachód:\s*(\d{2}:\d{2})",
-    moon_text,
-    re.IGNORECASE
-)
-
-if m:
-    result["moonset"] = m.group(1).zfill(5)
+    # Zachód księżyca
+    m = re.search(
+        r"Zach\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
+        moon_text,
+        re.IGNORECASE
+    )
+    if m:
+        result["moonset"] = m.group(1).zfill(5)
 
 
 # =====================================================
