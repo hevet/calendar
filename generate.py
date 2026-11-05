@@ -230,13 +230,24 @@ result["proverbs"] = ", ".join(proverbs)
 
 quote_section = soup.find(
     "div",
-    class_=re.compile(r"calcard_proverb-content")
+    class_="calCard_proverb-content"
 )
 
 if quote_section:
-    result["quote"] = clean(
-        quote_section.get_text(" ", strip=True)
-    )
+    quote_text = quote_section.find("i")
+
+    if quote_text:
+        result["quote"] = clean(
+            quote_text.get_text(" ", strip=True)
+        )
+
+    # Autor jest tekstem poza tagiem <i>
+    author = quote_section.find("i").next_sibling
+
+    if author:
+        result["quoteAuthor"] = clean(
+            author
+        ).strip(" -\u00a0")
 
 
 # =====================================================
