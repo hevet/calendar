@@ -38,6 +38,7 @@ result = {
     "officialHolidays": "",
     "holidays": "",
     "proverbs": "",
+    "quote": "",
     "sunrise": "",
     "sunset": "",
     "dayLength": "",
@@ -221,6 +222,34 @@ if section:
         )
 
 result["proverbs"] = ", ".join(proverbs)
+
+
+# =====================================================
+# CYTAT DNIA
+# =====================================================
+
+quote_section = soup.find(
+    "div",
+    class_="calcard_proverb-content"
+)
+
+if quote_section:
+    quote_text = quote_section.find("i")
+
+    if quote_text:
+        quote = clean(
+            quote_text.get_text(" ", strip=True)
+        )
+
+        author = quote_text.find_next_sibling(
+            string=True
+        )
+
+        if author:
+            author = clean(author)
+            result["quote"] = f"{quote} - {author}"
+        else:
+            result["quote"] = quote
 
 
 # =====================================================
