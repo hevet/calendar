@@ -38,7 +38,6 @@ result = {
     "officialHolidays": "",
     "holidays": "",
     "proverbs": "",
-    "quote": "",
     "sunrise": "",
     "sunset": "",
     "dayLength": "",
@@ -222,23 +221,6 @@ if section:
         )
 
 result["proverbs"] = ", ".join(proverbs)
-
-
-# =====================================================
-# CYTAT DNIA
-# =====================================================
-
-result["quote"] = ""
-
-quote_section = soup.select_one(
-    "section.calCard-quotes .calcard_proverb-content"
-)
-
-if quote_section:
-    quote_text = quote_section.get_text(" ", strip=True)
-    quote_text = clean(quote_text)
-    quote_text = re.sub(r"\s+", " ", quote_text)
-    result["quote"] = quote_text.strip()
 
 
 # =====================================================
