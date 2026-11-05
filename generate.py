@@ -241,12 +241,14 @@ if quote_section:
             quote_text.get_text(" ", strip=True)
         )
 
-        author = quote_text.find_next_sibling(
-            string=True
+        # Usuń cytat z całego tekstu kontenera — zostanie autor
+        full_text = clean(
+            quote_section.get_text(" ", strip=True)
         )
 
+        author = full_text.replace(quote, "", 1).strip()
+
         if author:
-            author = clean(author)
             result["quote"] = f"{quote} - {author}"
         else:
             result["quote"] = quote
