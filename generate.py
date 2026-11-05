@@ -312,37 +312,45 @@ if m:
 
 
 # =====================================================
-# WSCHÓD / ZACHÓD KSIĘŻYCA (ZE STRONY GŁÓWNEJ DLA MIASTA)
+# WSCHÓD / ZACHÓD KSIĘŻYCA (Z DEDYKOWANEJ PODSTRONY MIASTA)
 # =====================================================
 
-moon_section = soup.find(
-    "section",
-    class_="calCard-astro-moon"
+MOON_URL = f"https://www.kalbi.pl/kalendarz-faz-ksiezyca/{CITY}"
+
+moon_html = session.get(
+    MOON_URL,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+).text
+
+moon_soup = BeautifulSoup(
+    moon_html,
+    "html.parser"
 )
 
-if moon_section:
-    moon_text = moon_section.get_text(" ", strip=True)
-    moon_text = re.sub(r"\s+", " ", moon_text)
+moon_text = moon_soup.get_text(" ", strip=True)
+moon_text = re.sub(r"\s+", " ", moon_text)
 
-    # Wschód księżyca
-    m = re.search(
-        r"Wsch\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
-        moon_text,
-        re.IGNORECASE
-    )
+# Wschód księżyca
+m = re.search(
+    r"Wschód:\s*(\d{2}:\d{2})",
+    moon_text,
+    re.IGNORECASE
+)
 
-    if m:
-        result["moonrise"] = m.group(1).zfill(5)
+if m:
+    result["moonrise"] = m.group(1).zfill(5)
 
-    # Zachód księżyca
-    m = re.search(
-        r"Zach\.\s*Księżyca\s+o\s+(\d{1,2}:\d{2})",
-        moon_text,
-        re.IGNORECASE
-    )
+# Zachód księżyca
+m = re.search(
+    r"Zachód:\s*(\d{2}:\d{2})",
+    moon_text,
+    re.IGNORECASE
+)
 
-    if m:
-        result["moonset"] = m.group(1).zfill(5)
+if m:
+    result["moonset"] = m.group(1).zfill(5)
 
 
 # =====================================================
