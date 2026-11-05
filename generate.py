@@ -228,18 +228,25 @@ result["proverbs"] = ", ".join(proverbs)
 # CYTAT DNIA
 # =====================================================
 
-quote_section = soup.find(
-    "div",
-    class_="calCard_proverb-content"
-)
-
 result["quote"] = ""
 
+# Szukamy najpierw całej sekcji cytatów
+quote_section = soup.find(
+    "section",
+    class_="calCard-quotes"
+)
+
 if quote_section:
-    result["quote"] = quote_section.get_text(
-        " ",
-        strip=True
+    # Wewnątrz tej sekcji szukamy właściwej treści cytatu
+    content_div = quote_section.find(
+        "div",
+        class_="calCard_proverb-content"
     )
+    if content_div:
+        result["quote"] = content_div.get_text(
+            " ",
+            strip=True
+        )
 
 
 # =====================================================
