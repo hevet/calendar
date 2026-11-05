@@ -229,31 +229,28 @@ result["proverbs"] = ", ".join(proverbs)
 # CYTAT DNIA
 # =====================================================
 
-quote_section = soup.find(
-    "div",
-    class_="calcard_proverb-content"
+result["quote"] = ""
+result["quoteAuthor"] = ""
+
+quote_section = soup.select_one(
+    "section.calCard-quotes div.calcard_proverb-content"
 )
 
 if quote_section:
-    quote_text = quote_section.find("i")
+    quote_tag = quote_section.find("i")
 
-    if quote_text:
-        result["quote"] = clean(
-            quote_text.get_text(" ", strip=True)
-        ).rstrip(" -\u00a0")
+    if quote_tag:
+        result["quote"] = quote_tag.get_text(
+            " ", strip=True
+        ).strip("„”\"' -\u00a0")
 
-        author_node = quote_text.next_sibling
-    else:
-        # Awaryjnie pobierz cały tekst kontenera
-        result["quote"] = clean(
-            quote_section.get_text(" ", strip=True)
-        )
-        author_node = None
+        # Autor to tekst po tagu <i>
+        author = quote_tag.next_sibling
 
-    if author_node:
-        author = clean(str(author_node)).strip(" -\u00a0")
         if author:
-            result["quoteAuthor"] = author
+            result["quoteAuthor"] = str(author).strip(
+                " \n\r\t-\u00a0"
+            )
 
 # =====================================================
 # WSCHÓD / ZACHÓD SŁOŃCA
