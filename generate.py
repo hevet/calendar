@@ -230,28 +230,13 @@ result["proverbs"] = ", ".join(proverbs)
 
 quote_section = soup.find(
     "div",
-    class_="calcard_proverb-content"
+    class_=re.compile(r"calcard_proverb-content")
 )
 
 if quote_section:
-    quote_text = quote_section.find("i")
-
-    if quote_text:
-        quote = clean(
-            quote_text.get_text(" ", strip=True)
-        )
-
-        # Usuń cytat z całego tekstu kontenera — zostanie autor
-        full_text = clean(
-            quote_section.get_text(" ", strip=True)
-        )
-
-        author = full_text.replace(quote, "", 1).strip()
-
-        if author:
-            result["quote"] = f"{quote} - {author}"
-        else:
-            result["quote"] = quote
+    result["quote"] = clean(
+        quote_section.get_text(" ", strip=True)
+    )
 
 
 # =====================================================
