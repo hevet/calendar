@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from html import unescape
 from datetime import datetime
 
-URL = "https://www.kalbi.pl/"
+URL = "https://www.kalbi.pl/9-listopada"
 CITY = "bydgoszcz"
 SUN_URL = f"https://www.kalbi.pl/wschod-zachod-slonca/{CITY}"
 
