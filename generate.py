@@ -75,6 +75,7 @@ result = {
     "holidays": "",
     "proverbs": "",
     "quote": "",
+    "inChurch": "",
     "sunrise": "",
     "sunset": "",
     "moonrise": "",
@@ -283,6 +284,32 @@ if quote_section:
             " ",
             strip=True
         )
+
+
+# =====================================================
+# W KOŚCIELE
+# =====================================================
+
+church = soup.find(
+    "section",
+    class_="calCard-liturgia"
+)
+
+if church:
+    heading = church.find(
+        "h3",
+        class_="calCard-ententa-t"
+    )
+
+    if heading:
+        result["inChurch"] = clean(
+            church.get_text(" ", strip=True)
+        )
+
+        result["inChurch"] = result["inChurch"].replace(
+            heading.get_text(" ", strip=True),
+            ""
+        ).strip()
 
 
 # =====================================================
