@@ -69,7 +69,7 @@ soup = BeautifulSoup(html, "html.parser")
 result = {
     "calendar": "",
     "namedays": "",
-    "namedaysFull": "";
+    "namedaysFull": "",
     "zodiac": "",
     "officialHolidays": "",
     "holidays": "",
