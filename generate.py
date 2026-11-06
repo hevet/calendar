@@ -234,7 +234,7 @@ if section:
 
     for a in section.find_all("a"):
 
-        holidays.append(
+        unusualHolidays.append(
             clean(a.text)
         )
 
