@@ -69,6 +69,7 @@ soup = BeautifulSoup(html, "html.parser")
 result = {
     "calendar": "",
     "namedays": "",
+    "namedaysFull": "";
     "zodiac": "",
     "officialHolidays": "",
     "holidays": "",
@@ -164,6 +165,7 @@ section = soup.find(
 )
 
 result["namedays"] = ""
+result["namedaysFull"] = ""
 
 if section:
 
@@ -171,18 +173,17 @@ if section:
         section.get_text(" ")
     )
 
-    if "oraz" in text:
-        text = text.split("oraz")[0]
-
     if "obchodzą:" in text:
         text = text.split("obchodzą:")[1]
 
-    text = text.strip()
-
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
     text = re.sub(r"\s+,", ",", text)
 
-    result["namedays"] = text
+    # Wszystkie imiona
+    result["namedaysFull"] = text
+
+    # Tylko pierwsza grupa imion
+    result["namedays"] = text.split("oraz")[0].strip()
 
 
 # =====================================================
