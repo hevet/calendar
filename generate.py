@@ -71,8 +71,8 @@ result = {
     "namedays": "",
     "namedaysFull": "",
     "zodiac": "",
-    "officialHolidays": "",
-    "unusualHolidays": "",
+    "holidays": "",
+    "holidaysOther": "",
     "proverbs": "",
     "quote": "",
     "inChurch": "",
@@ -214,7 +214,7 @@ fete = soup.find(
 )
 
 if fete:
-    result["officialHolidays"] = clean(
+    result["holidays"] = clean(
         fete.text
     )
 
@@ -223,7 +223,7 @@ if fete:
 # NIETYPOWE ŚWIĘTA
 # =====================================================
 
-unusualHolidays = []
+holidaysOther = []
 
 section = soup.find(
     "section",
@@ -234,11 +234,11 @@ if section:
 
     for a in section.find_all("a"):
 
-        unusualHolidays.append(
+        holidaysOther.append(
             clean(a.text)
         )
 
-result["unusualHolidays"] = ". ".join(unusualHolidays)
+result["holidaysOther"] = ". ".join(holidaysOther)
 
 
 # =====================================================
